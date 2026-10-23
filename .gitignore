@@ -1,0 +1,32 @@
+# Environment & Sensitive Keys
+.env
+.env.*
+*.env
+js/config.js
+
+# Dependencies
+node_modules/
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Scratch / Temporary Scripts
+fix.js
+fix_sign.js
+fix_sign2.js
+sign_base64.txt
+*.log
+
+# Vercel Deployment Cache
+.vercel
