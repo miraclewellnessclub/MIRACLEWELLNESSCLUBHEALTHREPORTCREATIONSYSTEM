@@ -44,6 +44,22 @@ document.addEventListener('DOMContentLoaded', () => {
             views[viewName].classList.remove('hidden');
             views[viewName].classList.add('active');
             window.scrollTo(0, 0);
+
+            // Auto-focus logic for effortless login experience
+            if (viewName === 'login') {
+                setTimeout(() => {
+                    const userInput = document.getElementById('username');
+                    if (userInput) userInput.focus();
+                }, 100);
+            } else if (viewName === 'otp') {
+                setTimeout(() => {
+                    const otpInputsList = document.querySelectorAll('.otp-input');
+                    otpInputsList.forEach(input => input.value = '');
+                    const fullOtpElem = document.getElementById('full-otp');
+                    if (fullOtpElem) fullOtpElem.value = '';
+                    if (otpInputsList.length > 0) otpInputsList[0].focus();
+                }, 100);
+            }
         }
     }
 
@@ -128,17 +144,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     otpInputs.forEach((input, index) => {
         input.addEventListener('input', function (e) {
-            // Auto focus next
-            if (this.value.length === 1 && index < otpInputs.length - 1) {
+            // Strip any non-digit characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            // Auto focus next box
+            if (this.value.length >= 1 && index < otpInputs.length - 1) {
                 otpInputs[index + 1].focus();
             }
             updateFullOtp();
+
+            // Auto-submit when all 4 digits are entered
+            const currentOtp = document.getElementById('full-otp').value.trim();
+            if (currentOtp.length === 4) {
+                otpForm.dispatchEvent(new Event('submit', { cancelable: true }));
+            }
         });
 
         input.addEventListener('keydown', function (e) {
             // Auto focus prev on backspace
             if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
                 otpInputs[index - 1].focus();
+            }
+        });
+
+        // Support pasting 4-digit OTP directly
+        input.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim();
+            const digits = pasteData.replace(/[^0-9]/g, '');
+            if (digits.length > 0) {
+                for (let i = 0; i < otpInputs.length && i < digits.length; i++) {
+                    otpInputs[i].value = digits[i];
+                }
+                updateFullOtp();
+                const currentOtp = document.getElementById('full-otp').value.trim();
+                if (currentOtp.length === 4) {
+                    otpForm.dispatchEvent(new Event('submit', { cancelable: true }));
+                } else if (digits.length < otpInputs.length) {
+                    otpInputs[digits.length].focus();
+                }
             }
         });
     });
@@ -720,50 +764,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btn = document.getElementById('btn-share-whatsapp');
         const originalHtml = btn.innerHTML;
+        btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Preparing...";
+        btn.disabled = true;
 
-        if (!currentReport.pdfUrl) {
-            btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Uploading...";
-            btn.disabled = true;
-            try {
-                const url = await PDFGenerator.downloadPDF(currentReport, `${currentReport.fullName.replace(/\s+/g, '_')}_Health_Report.pdf`, true);
-                if (url) {
-                    currentReport.pdfUrl = url;
-                    Store.saveReport(currentReport);
-                    updateStorageStats();
-                } else {
-                    showToast('Upload failed! Please check Supabase Storage settings (Public Bucket).', 'error');
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
-                    return;
-                }
-            } catch (err) {
-                showToast('Failed to generate PDF: ' + (err.message || err), 'error');
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-                return;
-            }
-        } // Close the if block
-
-        // Shorten the URL using TinyURL for a cleaner message
-        let finalUrl = currentReport.pdfUrl;
         try {
-            const shortResponse = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(finalUrl)}`);
-            if (shortResponse.ok) {
-                finalUrl = await shortResponse.text();
+            // 1. Upload to Supabase Storage if PDF URL doesn't exist yet
+            if (!currentReport.pdfUrl) {
+                btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Uploading...";
+                try {
+                    const url = await PDFGenerator.downloadPDF(
+                        currentReport,
+                        `${(currentReport.fullName || 'Health').replace(/\s+/g, '_')}_Report.pdf`,
+                        true
+                    );
+                    if (url) {
+                        currentReport.pdfUrl = url;
+                        Store.saveReport(currentReport);
+                        updateStorageStats();
+                    }
+                } catch (uploadErr) {
+                    console.warn("Cloud upload warning during share:", uploadErr);
+                }
             }
-        } catch (e) {
-            console.error("Failed to shorten URL", e);
+
+            // 2. Shorten URL with strict 2.5-second timeout so it never hangs
+            let finalUrl = currentReport.pdfUrl || '';
+            if (finalUrl) {
+                try {
+                    const abortCtrl = new AbortController();
+                    const timeoutId = setTimeout(() => abortCtrl.abort(), 2500);
+                    const shortResponse = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(finalUrl)}`, {
+                        signal: abortCtrl.signal
+                    });
+                    clearTimeout(timeoutId);
+                    if (shortResponse.ok) {
+                        const shortText = (await shortResponse.text()).trim();
+                        if (shortText && shortText.startsWith('http')) {
+                            finalUrl = shortText;
+                        }
+                    }
+                } catch (e) {
+                    // Fallback to original finalUrl immediately
+                }
+            }
+
+            // 3. Compose message
+            const linkLine = finalUrl ? `\n\nआपला संपूर्ण अहवाल पाहण्यासाठी खालील लिंकवर क्लिक करा:\n${finalUrl}` : '';
+            const msg = `नमस्कार ${currentReport.fullName} \n\nआपण Miracle Wellness Club च्या आरोग्य तपासणी शिबिरामध्ये सहभागी झाल्याबद्दल धन्यवाद.\n\nआपला वैयक्तिक आरोग्य अहवाल तयार झाला आहे.\n\nआरोग्य गुणांक : ${currentReport.healthScore || 'N/A'}/100${linkLine}\n\nनिरोगी शरीर, आनंदी जीवन \nMiracle Wellness Club`;
+
+            const encodedMsg = encodeURIComponent(msg);
+
+            let mobile = (currentReport.mobile || '').replace(/[^0-9]/g, '');
+            if (mobile && mobile.length === 10) mobile = '91' + mobile;
+
+            const whatsappUrl = `https://wa.me/${mobile}?text=${encodedMsg}`;
+
+            // 4. Reliable trigger on mobile & desktop without popup blocker issues
+            showToast('Opening WhatsApp...', 'success');
+            const link = document.createElement('a');
+            link.href = whatsappUrl;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => link.remove(), 100);
+
+        } catch (err) {
+            console.error("Error sharing report:", err);
+            showToast('Failed to share: ' + (err.message || err), 'error');
+        } finally {
+            // ALWAYS reset button state so it NEVER remains stuck in Uploading/spinning
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
         }
-
-        const msg = `नमस्कार ${currentReport.fullName} \n\nआपण Miracle Wellness Club च्या आरोग्य तपासणी शिबिरामध्ये सहभागी झाल्याबद्दल धन्यवाद.\n\nआपला वैयक्तिक आरोग्य अहवाल तयार झाला आहे.\n\n आरोग्य गुणांक : ${currentReport.healthScore}/100\n\nआपला संपूर्ण अहवाल पाहण्यासाठी खालील लिंकवर क्लिक करा.\n\n${finalUrl}\n\n निरोगी शरीर, आनंदी जीवन \n\nMiracle Wellness Club`;
-
-        const encodedMsg = encodeURIComponent(msg);
-
-        let mobile = currentReport.mobile;
-        if (mobile && mobile.length === 10) mobile = '91' + mobile;
-
-        const whatsappUrl = `https://wa.me/${mobile}?text=${encodedMsg}`;
-        window.open(whatsappUrl, '_blank');
     });
 
 });

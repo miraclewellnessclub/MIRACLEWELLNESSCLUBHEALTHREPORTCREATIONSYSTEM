@@ -117,14 +117,14 @@ const PDFGenerator = {
                 };
 
                 const timeoutTask = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error("Upload Timeout - Check Network or Supabase Rules")), 15000);
+                    setTimeout(() => reject(new Error("Upload Timeout - Check Network or Supabase Rules")), 8000);
                 });
 
                 const downloadURL = await Promise.race([uploadTask(), timeoutTask]);
                 return downloadURL;
             } catch (err) {
-                console.error("Supabase upload failed:", err);
-                throw new Error(err.message || err.error || "Unknown Supabase Error");
+                console.warn("Supabase upload failed:", err);
+                return null;
             }
         } catch (error) {
             console.error("Error generating PDF:", error);

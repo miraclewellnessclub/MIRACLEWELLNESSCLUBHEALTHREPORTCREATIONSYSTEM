@@ -726,31 +726,6 @@ tr:hover td {
     }
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-    .app-header {
-        padding: 1rem;
-    }
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
-    .health-score-section {
-        grid-template-columns: 1fr;
-    }
-    .report-footer {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 2rem;
-    }
-    .dashboard-actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .search-box {
-        max-width: 100%;
-    }
-}
-
 /* Storage Progress Bar */
 .storage-progress-bar {
     width: 100%;
@@ -773,4 +748,376 @@ tr:hover td {
 
 .storage-progress-fill.danger {
     background-color: var(--danger);
+}
+
+/* ==========================================================================
+   MOBILE-FIRST & RESPONSIVE DESIGN FOR ALL DEVICES
+   ========================================================================== */
+
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Prevent auto-zooming on focus in iOS Safari */
+input, select, textarea {
+    font-size: 16px;
+}
+
+/* Touch action optimization */
+button, input, select {
+    touch-action: manipulation;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+.table-responsive table {
+    min-width: 580px;
+}
+
+/* --------------------------------------------------------------------------
+   TABLET & MOBILE BREAKPOINT (<= 768px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 0.75rem;
+    }
+
+    .py-4 {
+        padding-top: 1rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .p-4 {
+        padding: 1rem;
+    }
+
+    /* App Header */
+    .app-header {
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .header-brand {
+        gap: 0.5rem;
+    }
+
+    .header-brand h1 {
+        font-size: 1.1rem;
+    }
+
+    .header-logo {
+        height: 32px;
+    }
+
+    .header-actions {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .header-actions .btn {
+        padding: 0.5rem 0.85rem;
+        font-size: 0.85rem;
+        min-height: 38px;
+    }
+
+    /* Auth Screens (Login & OTP) */
+    .auth-container {
+        padding: 1rem 0.75rem;
+    }
+
+    .auth-card {
+        padding: 2rem 1.25rem;
+        max-width: 100%;
+        border-radius: var(--radius-lg);
+    }
+
+    .brand-logo {
+        width: 100px;
+    }
+
+    .brand-header h2 {
+        font-size: 1.3rem;
+    }
+
+    .otp-inputs {
+        gap: 0.4rem;
+        justify-content: center;
+    }
+
+    .otp-input {
+        width: 100%;
+        max-width: 55px;
+        height: 3.5rem;
+        font-size: 1.5rem;
+        border-radius: var(--radius-md);
+    }
+
+    /* Dashboard Actions & Grid */
+    .dashboard-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .search-box {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    .dashboard-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Form View */
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    /* Report Preview Document on Mobile */
+    .report-document {
+        padding: 1.25rem 0.85rem;
+        border-radius: var(--radius-md);
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .report-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .report-logo {
+        height: 65px;
+        margin: 0 auto;
+    }
+
+    .report-title h2 {
+        font-size: 1.35rem;
+        line-height: 1.3;
+    }
+
+    .report-title p {
+        font-size: 0.85rem;
+    }
+
+    .qrcode {
+        width: 65px;
+        height: 65px;
+        margin: 0 auto;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .info-item {
+        font-size: 0.88rem;
+        padding-bottom: 0.35rem;
+    }
+
+    .report-section {
+        margin-bottom: 1.25rem;
+    }
+
+    .report-section h3 {
+        font-size: 0.95rem;
+        padding: 0.4rem 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Parameters Table on Mobile */
+    .parameters-table {
+        font-size: 0.8rem;
+    }
+
+    .parameters-table th,
+    .parameters-table td {
+        padding: 0.5rem 0.3rem;
+    }
+
+    .parameters-table td .status-badge {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+
+    /* Health Score Section */
+    .health-score-section {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .score-circle {
+        width: 100px;
+        height: 100px;
+        font-size: 1.6rem;
+        border-width: 6px;
+        margin: 0.5rem auto;
+    }
+
+    .recommendations li {
+        font-size: 0.85rem;
+        padding: 0.35rem 0;
+        padding-left: 1.25rem;
+        text-align: left;
+    }
+
+    .report-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        padding-top: 1.25rem;
+    }
+
+    .signature-line {
+        margin: 0 auto 0.5rem auto;
+        width: 160px;
+    }
+
+    .signature-img {
+        margin: 0 auto -5px auto;
+        height: 45px;
+    }
+
+    .watermark-text {
+        font-size: 3rem;
+        top: -150px;
+    }
+
+    /* Modal Mobile Styling */
+    .modal-content {
+        width: 95vw;
+        max-width: 95vw;
+        max-height: 85vh;
+        padding: 1.25rem;
+        overflow-y: auto;
+    }
+
+    .modal-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    /* Toast on mobile */
+    .toast-container {
+        left: 10px;
+        right: 10px;
+        bottom: 15px;
+    }
+
+    .toast {
+        min-width: auto;
+        width: 100%;
+        font-size: 0.9rem;
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   SMALL MOBILE SCREENS (<= 480px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+    .app-header {
+        padding: 0.6rem 0.75rem;
+    }
+
+    .header-brand h1 {
+        font-size: 0.95rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .header-actions .btn {
+        flex: 1;
+        padding: 0.5rem 0.4rem;
+        font-size: 0.8rem;
+        gap: 0.25rem;
+    }
+
+    .header-actions .theme-toggle {
+        flex: none;
+    }
+
+    .auth-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .otp-inputs {
+        gap: 0.35rem;
+    }
+
+    .otp-input {
+        height: 3rem;
+        font-size: 1.3rem;
+    }
+
+    .report-title h2 {
+        font-size: 1.15rem;
+    }
+
+    .parameters-table {
+        font-size: 0.74rem;
+    }
+
+    .parameters-table th,
+    .parameters-table td {
+        padding: 0.45rem 0.2rem;
+    }
 }
